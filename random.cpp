@@ -27,10 +27,11 @@ int main(){
 
 
 	random_device q;
-	default_random_engine p(g);
+	default_random_engine p(q());
 	uniform_int_distribution<int> distribution2(-999999,100000);
 	cout << distribution2(p);
 	//先种种子，再生成随机数，这样更随机
+
 
 
 
@@ -38,12 +39,12 @@ int main(){
 	//用于获得随机数引擎种子
 	mt19937 gen(rd());
 	//以rd（）播种的标准 mersenne_twister_engine
-	uniform_real_distribution<double> dis(10000,99999);
+	uniform_real_distribution<double> diss(10000,99999);
 	for (int i=0;i<10;i++){
-		cout << dis(gen) << " ";
+		cout << diss(gen)<< " ";
 	}
+	
 	return 0;
 }
-
 
 
