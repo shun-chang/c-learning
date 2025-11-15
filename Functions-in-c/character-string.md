@@ -10,7 +10,7 @@
 > ## range of application :
 - vector、queue、list、string
 > ## example :
-```
+```c++
 #include <vector>
 #include <iostream>
 
@@ -35,7 +35,7 @@ int main() {
 > - grammar:getline(输入流, 接收字符串变量, 终止符)
 > - 终止符（可选）：默认是 '\n'（换行符），遇到该字符停止读取 **（终止符不会存入字符串）**
 > - 解决 cin >> 无法读取带空格的字符串的问题
-```
+```c++
 #include <string>
 #include <iostream>
 using namespace std;
@@ -51,7 +51,7 @@ int main() {
 > - grammar:输入流.getline(字符数组, 数组大小, 终止符)
 > - 终止符（可选）：默认 '\n'，读取到后停止，且会在字符数组末尾自动添加 '\0'（字符串结束符）
 
-```
+```c++
 #include <iostream>
 using namespace std;
 
@@ -73,19 +73,19 @@ int main() {
 >> solutions :
 >> 1. 用 `cin.ignore() `清空缓冲区的换行符         
 >> - `cin.ignore(n, ch) `会忽略输入缓冲区中前 n 个字符，直到遇到 ch（默认忽略 1 个字符）：
-```
+```c++
 cin >> age;
 cin.ignore();  // 忽略缓冲区中残留的 '\n'（默认忽略 1 个字符）
 getline(cin, name);  // 正常读取
 ```
 >> - 若缓冲区可能有多个残留字符（如输入年龄后输入了多余空格），可忽略所有字符直到换行：
-```
+```c++
 cin.ignore(numeric_limits<streamsize>::max(), '\n');  // 需要包含 <limits> 头文件
 ```
 >> 2. 用 getline() 读取前先清空缓冲区（兼容多残留字符）
 >> - cin >> age;
 // 清空缓冲区中所有字符，直到换行
-```
+```c++
 while (cin.get() != '\n');  
 getline(cin, name);
 ```
@@ -100,7 +100,7 @@ getline(cin, name);
 - 若 pos + count 超过字符串的长度，不会报错，而是截取到字符串末尾（自动缩短 count）
 - substr 返回的是 新字符串，无论怎么截取，原字符串的内容和长度都不变
 ## example :        
-```
+```c++
 string str = "abcdefgh";
 size_t n = 3;
 
@@ -119,7 +119,7 @@ cout << "前缀：" << prefix << "，后缀：" << suffix << endl;
 > 3. 操作结果：直接修改原容器 / 数组（原地反转，无额外内存开销），时间复杂度 O (n)（n 为区间内元素个数）
 - caution :
 > - 普通数组没有 `begin()/end()` 成员函数，需用 数组首地址（arr）和 尾后地址（arr + 长度）作为迭代器 :
-```
+```c++
 int arr[] = {10, 20, 30};
 int len = 3;
 reverse(arr, arr + len);  // 正确：arr 是首指针，arr+3 是尾后指针
@@ -127,7 +127,7 @@ reverse(arr, arr + len);  // 正确：arr 是首指针，arr+3 是尾后指针
 ```
 > - 与 std::string::rbegin () 的区别 :
 string 的 rbegin()（反向迭代器）是 “遍历反转”，不会修改原字符串；而 reverse 是 “修改原字符串反转”     
-```
+```c++
 string str = "123";
 // 用 rbegin() 遍历（原字符串不变）
 for (auto it = str.rbegin(); it != str.rend(); ++it) {
@@ -142,7 +142,7 @@ cout << "反转后原字符串：" << str << endl;  // 输出：321
 ## header file : `<algorithm>`
 ## 用于字符串查找 ：
 ### grammar :
-```
+```c++
 #include <string>  // 必须包含头文件
 
 // 查找子串 s，从 pos 位置开始（默认 pos=0）
@@ -170,7 +170,7 @@ size_t find(const char* s, size_t pos = 0) const;
 
 ## 用于容器/数组查找 :
 ### grammar : 
-```
+```c++
 #include <algorithm>  // 必须包含头文件
 
 // 查找 [first, last) 区间内第一个等于 value 的元素
@@ -185,7 +185,7 @@ InputIterator find(InputIterator first, InputIterator last, const T& value);
 &#9675; 未找到：返回 last（区间的尾后迭代器 / 指针）
 
 &#9679; example 1 (`vector`):
-```
+```c++
 #include <algorithm>
 #include <vector>
 #include <iostream>
@@ -209,7 +209,7 @@ int main() {
 }
 ```
 &#9679; example 2 (`pointer`) :
-```
+```c++
 #include <algorithm>
 #include <iostream>
 using namespace std;
