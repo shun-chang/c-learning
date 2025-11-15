@@ -1,4 +1,4 @@
-#include "bigint.hpp"
+﻿#include "bigint.hpp"
 #include <cctype>
 #include <stdexcept>
 
@@ -10,14 +10,14 @@ Bigint::Bigint(const std::string &raw_str){
     process_input_str(raw_str,is_negative,digits);
 }
 
-Bigint::Bigint (const Bigint &rhs): is_negative(rhs.is_negative),digits(rhs.digits){}
+Bigint::Bigint(const Bigint &rhs): is_negative(rhs.is_negative),digits(rhs.digits){}
 
-Bigint::Bigint (Bigint &&rhs): is_negative(rhs.is_negative),digits(rhs.digits){
+Bigint::Bigint(Bigint &&rhs) noexcept : is_negative(rhs.is_negative),digits(rhs.digits){
     rhs.is_negative=false;
     rhs.digits="0";
 }
 
-Bigint& Bigint:: operator=(const Bigint & rhs){
+Bigint& Bigint::operator=(const Bigint & rhs){
     if(this!=&rhs){
         this->is_negative=rhs.is_negative;
         this->digits=rhs.digits;
@@ -25,7 +25,7 @@ Bigint& Bigint:: operator=(const Bigint & rhs){
     return *this;
 }
 
-Bigint& Bigint::operator=(Bigint&& rhs){
+Bigint& Bigint::operator=(Bigint&& rhs) noexcept {
     if(this!=&rhs){
         this->is_negative=rhs.is_negative;
         this->digits=std::move(rhs.digits);
@@ -157,7 +157,11 @@ std::string Bigint::getstr() const{
     if(is_zero()){
         return "0";
     }
-    std::string num_str(digits.rbegin(),digits.rend());
+    std::string trimmed = digits;
+    while(trimmed.size() > 1 && trimmed.back() == '0'){
+        trimmed.pop_back();
+    }
+    std::string num_str(trimmed.rbegin(), trimmed.rend());
     return is_negative?('-'+num_str):num_str;
 }
 //若没有 operator bool()，需手动写 if (!a.is_zero())，代码冗余；
@@ -174,7 +178,7 @@ int Bigint::compare_unsigned(const std::string &a,const std::string &b) noexcept
     if(a.size()!=b.size()){
         return a.size()>b.size() ? 1 : -1;
     }
-    for(auto it_a=a.rbegin(),it_b=b.rbegin();it_a>a.rend();it_a++,it_b++){
+    for(auto it_a=a.rbegin(),it_b=b.rbegin();it_a!=a.rend();it_a++,it_b++){
         if(*it_a>*it_b) return 1;
         if(*it_a<*it_b) return -1;
     }
@@ -185,7 +189,7 @@ std::string Bigint::shift_left_unsigned(const std::string &num, std::size_t n) n
     if(num =="0"||n==0){
         return num;
     }
-    return num + std::string(n,'0');
+    return std::string(n,'0')+num;
 }
 
 std::string Bigint::add_unsigned(const std::string&  a,const std::string &b) noexcept{
@@ -234,7 +238,7 @@ std::string Bigint::mul_unsigned(const std::string &a,const std::string &b)noexc
         for(auto c:a){
             const int digits_c=c-'0';
             const int product=digits_c*digits_b+carry;
-            temp.push_back((product%19)+'0');
+            temp.push_back((product%10)+'0');
             carry=product/10;
         }
         if(carry>0){
@@ -304,10 +308,10 @@ bool Bigint::is_valid_number_str(const std::string raw_str) noexcept{
 }
 
 void Bigint::process_input_str(const std::string &raw_str,bool &out_is_negative,std::string &out_digits){
-    bool out_negative=false;
+    out_is_negative=false;
     std::string new_part=raw_str;
     if(new_part[0]=='-'){
-        out_negative=true;
+        out_is_negative=true;
         new_part=raw_str.substr(1);
     }
     std::size_t first_non_zero=new_part.find_first_not_of('0');

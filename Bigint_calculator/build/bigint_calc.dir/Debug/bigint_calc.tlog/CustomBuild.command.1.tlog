@@ -1,0 +1,10 @@
+^C:\USERS\13645\DESKTOP\GIT-TEST\BIGINT_CALCULATOR\CMAKELISTS.TXT
+setlocal
+D:\cmake\bin\cmake.exe -SC:/Users/13645/Desktop/git-test/Bigint_calculator -BC:/Users/13645/Desktop/git-test/Bigint_calculator/build --check-stamp-file C:/Users/13645/Desktop/git-test/Bigint_calculator/build/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

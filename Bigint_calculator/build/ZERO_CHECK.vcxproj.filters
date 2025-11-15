@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\13645\Desktop\git-test\Bigint_calculator\build\CMakeFiles\2555fd1d048acbd694933122e2fec7d8\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{2129D668-55A1-301F-8014-9B426642EA99}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
