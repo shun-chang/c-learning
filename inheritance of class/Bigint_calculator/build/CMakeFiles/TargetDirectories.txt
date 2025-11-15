@@ -1,0 +1,3 @@
+C:/Users/13645/Desktop/git-test/Bigint_calculator/build/CMakeFiles/bigint_calc.dir
+C:/Users/13645/Desktop/git-test/Bigint_calculator/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/13645/Desktop/git-test/Bigint_calculator/build/CMakeFiles/ZERO_CHECK.dir
