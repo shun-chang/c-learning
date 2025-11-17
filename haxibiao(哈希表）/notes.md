@@ -1,4 +1,5 @@
 <font face='微软雅黑' size=10 color=blue><center>Hash Table</font></center>
+<font face='微软雅黑'>
 
 [TOC]
 
