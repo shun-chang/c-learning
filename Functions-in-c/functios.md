@@ -252,6 +252,275 @@ if (it == vec.end()) { /* 未找到 */ }
 int* ptr = find(arr, arr + len, target);
 if (ptr == arr + len) { /* 未找到 */ }
 ```
+
+## 6. strtokv :
+### 函数原型：
+-  标准原型（线程不安全版）
+```c++
+char *strtok(char *str, const char *delimiters);
+```
+- 可重入版（线程安全，推荐使用）
+```c++
+char *strtok_r(char *str, const char *delimiters, char **saveptr);
+```
+- 参数说明：
+    - `str`：第一次调用时：传入要分割的原始字符串；后续调用时：传入`NULL`（表示继续分割上一个字符串）。
+    - `delimiters`: 分隔符集合（字符串），包含所有用作分割的字符（如`",;|"`表示逗号、分号、竖线都是分隔符）。
+    - `saveptr`: 仅`strtok_r`可用：用于保存上次分割的位置，避免静态变量冲突（线程安全关键）。
+- 返回值：
+    - 成功：返回当前分割得到的`token`指针（指向子字符串的起始地址）；
+    - 失败：当没有更多`token`可分割时，返回`NULL`。
+### 工作原理：
+- 破坏性修改原始字符串：
+    - 分割时会将原始字符串中遇到的第一个分隔符替换为`'\0'`（字符串结束符），从而使当前`token`成为独立字符串；同时记录下一个字符的地址，作为下次分割的起点。
+- 状态保存机制：
+    - `strtok()`内部使用静态变量保存上次分割的位置，因此第一次调用传入 str 后，后续调用需传入`NULL`,函数会自动从上次记录的位置继续分割；
+    - 静态变量是全局共享的，因此多线程环境下使用`strtok()`会导致状态冲突（线程不安全），这也是推荐用`strtok_r`的原因。
+- 分隔符的处理规则：
+    - 连续的分隔符会被视为 “一个整体”（不会生成空`token`）；
+    - 字符串开头 / 结尾的分隔符会被忽略（例如`";;a,b;;c"`分割后只会得到`a、b、c`）。
+### 基础用法：
+- 1. 多分隔符分割：
+```c++
+#include <stdio.h>
+#include <string.h>
+
+int main() {
+    char str[] = "Bob;30|Male,Shanghai";
+    const char *delims = ",;|";  // 多个分隔符：逗号、分号、竖线
+    
+    char *token = strtok(str, delims);
+    while (token != NULL) {
+        printf("token：%s\n", token);
+        token = strtok(NULL, delims);
+    }
+    
+    return 0;
+}
+```
+> 输出：
+```
+token：Bob
+token：30
+token：Male
+token：Shanghai
+```
+- 2. 线程安全版`strtok_r`用法:
+    -`strtok_r`通过`saveptr`参数手动保存分割状态，避免静态变量冲突，适合多线程或嵌套分割场景：
+```c++
+#include <stdio.h>
+#include <string.h>
+
+int main() {
+    char str[] = "Charlie,35;Male|Guangzhou";
+    const char *delims = ",;|";
+    char *saveptr;  // 用于保存分割位置（线程安全关键）
+    
+    // 第一次调用：传入 str、delims、&saveptr
+    char *token = strtok_r(str, delims, &saveptr);
+    while (token != NULL) {
+        printf("token：%s\n", token);
+        // 后续调用：str 传 NULL，saveptr 保持不变
+        token = strtok_r(NULL, delims, &saveptr);
+    }
+    
+    return 0;
+}
+```     
+- 3. 嵌套分割示例（分割 token 中的子串）:
+    - 用 strtok_r 可实现嵌套分割（例如先按分号分割，再按竖线分割子串）：
+```c++
+#include <stdio.h>
+#include <string.h>
+
+int main() {
+    char str[] = "David;40|Male;Shenzhen|Guangdong";
+    const char *delims1 = ";";  // 一级分隔符：分号
+    const char *delims2 = "|";  // 二级分隔符：竖线
+    char *saveptr1, *saveptr2;  // 两个 saveptr 分别保存两级分割状态
+    
+    // 一级分割：按分号拆分
+    char *token1 = strtok_r(str, delims1, &saveptr1);
+    while (token1 != NULL) {
+        // 二级分割：如果当前 token 包含竖线，继续拆分
+        if (strchr(token1, '|') != NULL) {  // 检查是否包含二级分隔符
+            char *token2 = strtok_r(token1, delims2, &saveptr2);
+            while (token2 != NULL) {
+                printf("子 token：%s\n", token2);
+                token2 = strtok_r(NULL, delims2, &saveptr2);
+            }
+        } else {
+            printf("一级 token：%s\n", token1);
+        }
+        token1 = strtok_r(NULL, delims1, &saveptr1);
+    }
+    
+    return 0;
+}
+```
+> 输出：
+```
+一级 token：David
+子 token：40
+子 token：Male
+子 token：Shenzhen
+子 token：Guangdong
+```
+### 注意点：
+- 修改原始字符串：
+`strtok()`会直接修改`str`参数（替换分隔符为`'\0'`），如果后续需要使用原始字符串，必须提前复制
+- 线程不安全：
+`strtok()`内部的静态变量会导致多线程冲突，例如两个线程同时调用 strtok() 分割不同字符串，会出现 `token`错乱。解决方案：全程使用`strtok_r（POSIX）或 strtok_s（Windows）`。
+- 连续分隔符导致空`token`丢失：
+`strtok()`会忽略连续的分隔符，例如`"a,,b;;c"`分割后得到`a、b、c，`不会产生空`token`。如果需要保留空`token`（如 CSV 中空字段），strtok() 无法直接实现，需手动处理（或使用自定义分割函数）。
+- 嵌套调用`strtok()`覆盖状态：
+如果在一个`strtok()`循环中嵌套另一个`strtok()`调用，会覆盖内部静态变量的状态，导致外层分割中断。解决方案：用`strtok_r`手动管理`saveptr`，避免状态冲突。
+- C++ 的`std::string`不能直接传给`strtok()`，但可以通过间接方式适配使用—— 核心原因是`strtok()` 的设计依赖 C 风格字符串`（char*）`，且会修改原始字符串，而`std::string`是 C++ 封装的字符串类，两者本质不同。
+    - 解决方法：
+```c++
+#include <iostream>
+#include <string>
+#include <cstring>  // 包含 strtok()
+
+int main() {
+    std::string str = "apple,banana,orange,grape";  // C++ string
+    const char* delims = ",";                       // 分隔符集合
+
+    // 1. 复制 string 内容到可修改的 char 数组（需确保数组长度足够）
+    char* c_str = new char[str.size() + 1];  // +1 留足 '\0' 位置
+    strcpy(c_str, str.c_str());              // 复制 string 的 C 风格字符串
+
+    // 2. 用 strtok() 分割
+    char* token = strtok(c_str, delims);
+    while (token != NULL) {
+        std::cout << "token: " << token << std::endl;
+        token = strtok(NULL, delims);
+    }
+
+    // 3. 释放动态分配的内存（避免内存泄漏）
+    delete[] c_str;
+    return 0;
+}
+```
+-----------
+```c++
+#include <iostream>
+#include <string>
+#include <vector>
+#include <cstring>
+
+int main() {
+    std::string str = "cat;dog|rabbit;fish";
+    const char* delims = ";|";
+
+    // 1. 用 vector<char> 存储可修改的字符串（自动管理内存）
+    std::vector<char> c_str(str.begin(), str.end());
+    c_str.push_back('\0');  // 手动添加字符串结束符
+
+    // 2. 分割（vector.data() 返回 char*，可修改）
+    char* token = strtok(c_str.data(), delims);
+    while (token != NULL) {
+        std::cout << "token: " << token << std::endl;
+        token = strtok(NULL, delims);
+    }
+
+    return 0;  // vector 自动释放内存，无需手动操作
+}
+```
+
+## 7. strcpy :
+### 标准原型:
+&emsp;&emsp;`char *strcpy(char *dest, const char *src);`
+- 参数：
+>|参数|作用|注意事项|
+>|:---|:---|:---|
+>|`dest`|目标字符串（接收复制内容的缓冲区），类型为`char*`（必须可修改）。|1. 必须是可修改的字符数组（char[]）或动态分配的 char*；<br> 2. 缓冲区大小必须 ≥ 源字符串长度 + 1（预留`'\0'`位置）。|
+>|`src`|源字符串（被复制的内容），类型为`const char*`（只读，不被修改）。	|可以是字符串常量（如 "hello"）、字符数组或`const char*` 指针，必须以`'\0'`结尾（否则会越界访问）。|
+- 返回值:
+返回`dest`的指针（即目标字符串的起始地址），方便链式调用（如`printf("%s", strcpy(dest, src))`）。
+### 核心工作原理
+- 从`src`的起始地址开始，逐个字节复制字符到`dest`对应的地址，直到遇到 `src` 中的 `'\0'`；
+- 会将 `src` 的 '\0' 一并复制到 `dest` 中（确保 dest 是合法的 C 风格字符串）；
+- 不检查` dest `的缓冲区大小：如果 `dest` 空间不足，会导致 “缓冲区溢出”（写入超出 `dest` 范围的内存），引发未定义行为（程序崩溃、内存错乱等）。
+### 示例
+- 字符数组间复制
+```c++
+#include <stdio.h>
+#include <string.h>
+
+int main() {
+    char src[] = "Hello, C!";  // 源字符串（字符数组，可修改）
+    char dest[20];             // 目标字符串（缓冲区大小 20，足够容纳 src）
+
+    // 复制 src 到 dest
+    strcpy(dest, src);
+
+    // 输出结果：dest 内容与 src 完全一致
+    printf("源字符串：%s\n", src);
+    printf("目标字符串：%s\n", dest);
+    printf("dest 地址：%p，返回值地址：%p\n", dest, strcpy(dest, src));  // 返回值是 dest 指针
+
+    return 0;
+}
+```
+> 输出：
+```
+源字符串：Hello, C!
+目标字符串：Hello, C!
+dest 地址：0x7ffee4b7e960，返回值地址：0x7ffee4b7e960
+```
+- 字符串常量复制到字符数组:
+```c++
+#include <stdio.h>
+#include <string.h>
+
+int main() {
+    const char *src = "I love programming!";  // 源字符串：字符串常量（只读）
+    char dest[30];                            // 目标缓冲区足够大
+
+    strcpy(dest, src);
+    printf("复制结果：%s\n", dest);  // 输出：复制结果：I love programming!
+
+    return 0;
+}
+```
+- 链式调用（利用返回值）:
+```c++
+#include <stdio.h>
+#include <string.h>
+
+int main() {
+    char dest[20];
+    // strcpy 返回 dest 指针，直接传给 printf 输出
+    printf("链式调用结果：%s\n", strcpy(dest, "链式调用成功！"));
+
+    return 0;
+}
+```
+### 注意
+> strcpy() 的最大风险是不检查目标缓冲区大小，容易引发缓冲区溢出。
+- 目标缓冲区大小不足（最常见）:
+```c++
+#include <stdio.h>
+#include <string.h>
+
+int main() {
+    char src[] = "这是一个很长的字符串，远超 dest 的大小";
+    char dest[10];  // 缓冲区仅 10 字节，根本容纳不下 src
+
+    strcpy(dest, src);  // 缓冲区溢出！未定义行为（程序可能崩溃、乱码）
+    printf("dest：%s\n", dest);
+
+    return 0;
+}
+```
+- 
+
+
+
+
+### 
+
 # others
 ## 1. memset
 ### 函数原型
