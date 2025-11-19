@@ -253,7 +253,7 @@ int* ptr = find(arr, arr + len, target);
 if (ptr == arr + len) { /* 未找到 */ }
 ```
 
-## 6. strtokv :
+## 6. strtok :
 ### 函数原型：
 -  标准原型（线程不安全版）
 ```c++
