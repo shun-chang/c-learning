@@ -135,6 +135,65 @@ int main() {
     return 0;
 }
 ```
+
+### 实现降序的set
+```c++
+#include <set>
+#include <functional>  // 包含 greater<T>
+using namespace std;
+
+set<int, greater<int>> s;  // int 类型的 set，降序排列
+```
+### 遍历方法
+- 正向：
+```c++
+#include <iostream>
+#include <set>
+
+int main() {
+    std::set<int> mySet = {3, 1, 4, 1, 5, 9};  // set 会自动去重并排序
+    
+    // 使用 begin() 和 end() 遍历
+    std::cout << "set 中的元素：";
+    for (auto it = mySet.begin(); it != mySet.end(); ++it) {
+        std::cout << *it << " ";  // 输出：1 3 4 5 9
+    }
+    std::cout << std::endl;
+    
+    return 0;
+}
+```
+
+- 反向：
+```c++
+#include <iostream>
+#include <set>
+
+std::set<int> mySet = {3, 1, 4, 5, 9};
+
+// 反向遍历
+std::cout << "反向遍历：";
+for (auto it = mySet.rbegin(); it != mySet.rend(); ++it) {
+    std::cout << *it << " ";  // 输出：9 5 4 3 1
+}
+```
+
+### 删除指定数
+```c++
+set<int> s;
+s.erase(值);  // 删除 set 中所有等于「值」的元素（set 中无重复，实际只删1个）
+```
+
+```c++
+set<int> s = {1,3,7,9};
+// 找到值=3和值=9的迭代器
+auto it1 = s.find(3);
+auto it2 = s.find(9);
+s.erase(it1, it2);  // 删除 [3,9) 区间的元素（即3、7）
+cout << "删除后 set：";
+for (int x : s) cout << x << " ";  // 输出：1 9
+```
+
 ## unordered_set(哈希表)
 - 无序唯一元素集合，元素及key，底层是哈希表，本质是“哈希集合”
 - 元素顺序：无序（哈希值排序）

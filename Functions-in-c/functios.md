@@ -94,7 +94,8 @@ while (cin.get() != '\n');
 getline(cin, name);
 ```
 ## 3. substr ：
-### grammar : ` std::string substr(size_t pos = 0, size_t count = npos) `
+### grammar : 
+` std::string substr(size_t pos = 0, size_t count = npos) `
 - explanation:
 > 1. pos（可选）：子串的起始位置索引（从 0 开始，默认值为 0，即从字符串开头截取）
 > 2. count（可选）：要截取的字符个数（默认值为 std::string::npos，表示截取从 pos 到字符串末尾的所有字符）
@@ -115,8 +116,10 @@ string suffix = str.substr(str.size() - n);  // fgh
 cout << "前缀：" << prefix << "，后缀：" << suffix << endl;
 ```
 ## 4. reverse :
-### header file : `<algorithm>`
-### grammar : `std::reverse(迭代器 first, 迭代器 last)`
+### header file : 
+`<algorithm>`
+### grammar : 
+`std::reverse(迭代器 first, 迭代器 last)`
 - key description :
 > 1. first：反转的起始迭代器（指向要反转的第一个元素）
 > 2. last：反转的结束迭代器（指向要反转的最后一个元素的**下一个位置**，即 **“左闭右开”**）
@@ -143,7 +146,8 @@ reverse(str.begin(), str.end());  // 修改原字符串
 cout << "反转后原字符串：" << str << endl;  // 输出：321
 ```
 ## 5. find :
-### header file : `<algorithm>`
+### header file :
+ `<algorithm>`
 ### 用于字符串查找 ：
 #### grammar :
 ```c++
@@ -514,7 +518,6 @@ int main() {
     return 0;
 }
 ```
-- 
 
 
 
@@ -642,3 +645,95 @@ int main() {
     - 若 `ptr` 为 `NULL`，调用 `memset` 会直接崩溃（空指针解引用），需提前确保 `ptr` 指向有效内存。
 - `volatile` 变量的特殊处理：
     - 若 `ptr` 指向 `volatile` 修饰的内存（如硬件寄存器），`memset` 可能被编译器优化失效，需用 `volatile` 指针或手动循环赋值。
+
+
+## 2. count
+### header
+&emsp;&emsp;`#include <algorithm> `
+### grammmar
+```c++
+#include <algorithm>  // 必须包含的头文件
+
+// 统计 [first, last) 区间内 == value 的元素个数
+template <class InputIterator, class T>
+typename iterator_traits<InputIterator>::difference_type
+count(InputIterator first, InputIterator last, const T& value);
+```
+- 参数：`first`（起始迭代器）、`last`（结束迭代器，左闭右开）、`value`（要统计的值）；
+- 返回值：匹配元素的个数（类型是`difference_type`，通常等价于`int`）。
+### examples
+- （1）统计 `vector` 中元素出现次数:
+```c++
+#include <iostream>
+#include <vector>
+#include <algorithm>  // std::count
+
+int main() {
+    std::vector<int> vec = {1, 2, 3, 2, 4, 2, 5};
+    int target = 2;
+    
+    // 统计 vec 中 2 出现的次数（依赖 begin()/end() 迭代器）
+    int cnt = std::count(vec.begin(), vec.end(), target);
+    std::cout << target << " 出现了 " << cnt << " 次" << std::endl;  // 输出：2 出现了 3 次
+    
+    return 0;
+}
+```
+
+- （2）统计数组中元素出现次数
+```c++
+#include <iostream>
+#include <algorithm>
+#include <cstring>  // strlen
+
+int main() {
+    char str[] = "abacaba";
+    char target = 'a';
+    
+    // 数组用 指针 作为迭代器（str 是首地址，str + strlen(str) 是末尾）
+    int cnt = std::count(str, str + strlen(str), target);
+    std::cout << target << " 出现了 " << cnt << " 次" << std::endl;  // 输出：a 出现了 4 次
+    
+    return 0;
+}
+```
+- （3）统计 string 中字符出现次数
+```c++
+#include <iostream>
+#include <string>
+#include <algorithm>
+
+int main() {
+    std::string s = "hello world";
+    char target = 'l';
+    
+    int cnt = std::count(s.begin(), s.end(), target);
+    std::cout << target << " 出现了 " << cnt << " 次" << std::endl;  // 输出：l 出现了 3 次
+    
+    return 0;
+}
+```
+### std::count_if
+- 统计「满足自定义条件」的元素（而非等于某个固定值）
+```c++
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+// 自定义条件：统计偶数的个数
+bool isEven(int x) {
+    return x % 2 == 0;
+}
+
+int main() {
+    std::vector<int> vec = {1, 2, 3, 4, 5, 6};
+    
+    // 统计满足 isEven 条件的元素个数
+    int evenCnt = std::count_if(vec.begin(), vec.end(), isEven);
+    std::cout << "偶数的个数：" << evenCnt << std::endl;  // 输出：3
+    
+    return 0;
+}
+```
+
+
